@@ -1,0 +1,8 @@
+tg_coper_state.json
+telegram_user_session.session*
+tg_coper_history.sqlite3*
+__pycache__/
+*.pyc
+
+.venv/
+startup_error.log
