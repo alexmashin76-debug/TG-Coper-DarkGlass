@@ -1,0 +1,56 @@
+
+name: Build TG_Coper Windows Installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build TG_Coper
+        shell: pwsh
+        run: |
+          pyinstaller --noconfirm --clean --windowed --onedir --name TG_Coper --icon TG_Coper.ico --add-data "tg_coper_splash.png;." --add-data "ui_background.png;." tg_coper_panel.py
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup --yes --no-progress
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "TG_Coper_Setup.iss"
+
+      - name: Save build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: TG_Coper-Windows-Installer
+          path: |
+            installer_output/TG_Coper_Setup.exe
+            dist/TG_Coper/
+          if-no-files-found: error
+          retention-days: 14
